@@ -34,4 +34,4 @@ Make sure you have a MongoDB instance running somewhere.
 If you are running it on localhost and on port 27017 (default port), you need not do anything else.
 Otherwise, ensure the appropriate connection URI is specified in the src/test/mongodb.test.properties file.
 
-- Initial contribution by Raúl Kripalani.
+- Initial contribution by Ra√∫l Kripalani.
