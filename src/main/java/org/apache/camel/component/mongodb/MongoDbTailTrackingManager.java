@@ -14,11 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mongodb;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
@@ -27,16 +23,19 @@ import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.mongodb.WriteConcern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class MongoDbTailTrackingManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(MongoDbTailTrackingManager.class);
+    
+    public Object lastVal;
+
     private final Mongo connection;
-    private DBCollection dbCol;
     private final MongoDbTailTrackingConfig config;
-    
+    private DBCollection dbCol;
     private DBObject trackingObj;
-    
-    Object lastVal;
     
     public MongoDbTailTrackingManager(Mongo connection, MongoDbTailTrackingConfig config) {
         this.connection = connection;
@@ -44,8 +43,9 @@ public class MongoDbTailTrackingManager {
     }
     
     public void initialize() throws Exception {
-        if (!config.persistent)
+        if (!config.persistent) {
             return;
+        }
         
         dbCol = connection.getDB(config.db).getCollection(config.collection);
         DBObject filter = new BasicDBObject("persistentId", config.persistentId);
@@ -59,8 +59,9 @@ public class MongoDbTailTrackingManager {
     }
     
     public synchronized void persistToStore() {
-        if (!config.persistent || lastVal == null)
+        if (!config.persistent || lastVal == null) {
             return;
+        }
         
         if (LOG.isDebugEnabled()) {
             LOG.debug("Persisting lastVal={} to store, collection: {}", lastVal, config.collection);
@@ -72,8 +73,9 @@ public class MongoDbTailTrackingManager {
     }
     
     public synchronized Object recoverFromStore() {
-        if (!config.persistent)
+        if (!config.persistent) {
             return null;
+        }
         
         lastVal = dbCol.findOne(trackingObj).get(config.field);
         
@@ -85,8 +87,9 @@ public class MongoDbTailTrackingManager {
     }
     
     public void setLastVal(DBObject o) {
-        if (config.increasingField == null)
+        if (config.increasingField == null) {
             return;
+        }
         
         lastVal = o.get(config.increasingField);
     }

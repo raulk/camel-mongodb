@@ -18,10 +18,11 @@ package org.apache.camel.component.mongodb;
 
 import java.util.Map;
 
+import com.mongodb.Mongo;
+
 import org.apache.camel.Endpoint;
 import org.apache.camel.impl.DefaultComponent;
-
-import com.mongodb.Mongo;
+import org.apache.camel.util.CamelContextHelper;
 
 /**
  * Represents the component that manages {@link MongoDbEndpoint}.
@@ -32,13 +33,9 @@ public class MongoDbComponent extends DefaultComponent {
      * Should access a singleton of type Mongo
      */
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
+        Mongo db = CamelContextHelper.mandatoryLookup(getCamelContext(), remaining, Mongo.class);
+
         Endpoint endpoint = new MongoDbEndpoint(uri, this);
-        
-        Mongo db = this.getCamelContext().getRegistry().lookup(remaining, Mongo.class);
-        if (db == null) {
-            throw new CamelMongoDbException("Cannot find MongoDb connection with name " + uri + " in the registry. Aborting initialisastion of MongoDb endpoint.");
-        }
-        
         parameters.put("mongoConnection", db);
         setProperties(endpoint, parameters);
         

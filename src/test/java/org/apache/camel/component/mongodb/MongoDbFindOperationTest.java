@@ -18,6 +18,10 @@ package org.apache.camel.component.mongodb;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBObject;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -27,11 +31,9 @@ import org.apache.camel.spring.SpringCamelContext;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBObject;
-
 public class MongoDbFindOperationTest extends AbstractMongoDbTest {
  
+    
     @Test
     public void testFindAllNoCriteriaOperation() throws Exception {
         // Test that the collection has 0 documents in it
@@ -40,8 +42,10 @@ public class MongoDbFindOperationTest extends AbstractMongoDbTest {
         
         Object result = template.requestBody("direct:findAll", (Object) null);
         assertTrue("Result is not of type List", result instanceof List);
-        
+
+        @SuppressWarnings("unchecked")
         List<DBObject> resultList = (List<DBObject>) result;
+
         assertListSize("Result does not contain all entries in collection", resultList, 1000);
         
         // Ensure that all returned documents contain all fields
@@ -66,8 +70,10 @@ public class MongoDbFindOperationTest extends AbstractMongoDbTest {
         DBObject fieldFilter = BasicDBObjectBuilder.start().add("_id", 0).add("fixedField", 0).get();
         Object result = template.requestBodyAndHeader("direct:findAll", (Object) null, MongoDbConstants.FIELDS_FILTER, fieldFilter);
         assertTrue("Result is not of type List", result instanceof List);
-        
+
+        @SuppressWarnings("unchecked")
         List<DBObject> resultList = (List<DBObject>) result;
+
         assertListSize("Result does not contain all entries in collection", resultList, 1000);
         
         // Ensure that all returned documents contain all fields
@@ -93,13 +99,15 @@ public class MongoDbFindOperationTest extends AbstractMongoDbTest {
         int numToSkip = 0;
         final int limit = 100;
         for (int i = 0; i < 10; i++) {
-            HashMap<String, Object> headers = new HashMap<String, Object>();
+            Map<String, Object> headers = new HashMap<String, Object>();
             headers.put(MongoDbConstants.NUM_TO_SKIP, numToSkip);
             headers.put(MongoDbConstants.LIMIT, 100);
             Object result = template.requestBodyAndHeaders("direct:findAll", (Object) null, headers);
             assertTrue("Result is not of type List", result instanceof List);
-            
+
+            @SuppressWarnings("unchecked")
             List<DBObject> resultList = (List<DBObject>) result;
+
             assertListSize("Result does not contain 100 elements", resultList, 100);
             assertEquals("Id of first record is not as expected", numToSkip + 1, Integer.parseInt((String) resultList.get(0).get("_id")));
             

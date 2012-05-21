@@ -14,40 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mongodb.converters;
 
 import java.util.Map;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 import org.apache.camel.Converter;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
-
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({"rawtypes"})
 @Converter
-public class MongoDbBasicConverters {
+public final class MongoDbBasicConverters {
     
     private static final transient Logger LOG = LoggerFactory.getLogger(MongoDbBasicConverters.class);
 
     // Jackson's ObjectMapper is thread-safe, so no need to create a pool nor synchronize access to it
-    private static ObjectMapper objectMapper = null;
-    
-    // will attempt to load the Jackson ObjectMapper class using the class loader of MongoDbBasicConverters
-    // in an OSGi environment, if Jackson is present it would have already been wired since Jackson is an optional dependency (Import-Package)
-    static {
-        try {
-            Class<ObjectMapper> objectMapperC = (Class<ObjectMapper>) MongoDbBasicConverters.class.getClassLoader().loadClass("org.codehaus.jackson.map.ObjectMapper");
-            MongoDbBasicConverters.objectMapper = objectMapperC.newInstance();
-        } catch (Exception e) {
-            // do nothing, Jackson not found
-        }
-    }
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
+    private MongoDbBasicConverters() { }
+    
     @Converter
     public static DBObject fromMapToDBObject(Map<?, ?> map) {
         return new BasicDBObject(map);
@@ -55,7 +45,7 @@ public class MongoDbBasicConverters {
     
     @Converter
     public static Map<String, Object> fromBasicDBObjectToMap(BasicDBObject basicDbObject) {
-        return (Map<String, Object>) basicDbObject;
+        return basicDbObject;
     }
     
     @Converter
@@ -72,12 +62,6 @@ public class MongoDbBasicConverters {
    
     @Converter
     public static DBObject fromAnyObjectToDBObject(Object value) {
-        if (MongoDbBasicConverters.objectMapper == null) {
-            LOG.warn("Conversion has fallen back to generic Object -> DBObject, but Jackson " +
-            		"was not available on the classpath during initialization. Returning null.");
-            return null;
-        }
-        
         BasicDBObject answer;
         try {
             Map m = MongoDbBasicConverters.objectMapper.convertValue(value, Map.class);
@@ -88,7 +72,6 @@ public class MongoDbBasicConverters {
             return null;
         }
         return answer;
-        
     }
     
 }

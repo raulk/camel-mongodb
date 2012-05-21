@@ -17,6 +17,10 @@
 package org.apache.camel.component.mongodb;
 
 import java.util.HashMap;
+import java.util.Map;
+
+import com.mongodb.DBObject;
+import com.mongodb.WriteResult;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
@@ -25,19 +29,14 @@ import org.apache.camel.spring.SpringCamelContext;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
-import com.mongodb.util.JSON;
-
-
 public class MongoDbConversionsTest extends AbstractMongoDbTest {
     
     @Test
     public void testInsertMap() throws InterruptedException {
         assertEquals(0, testCollection.count());
         
-        HashMap<String, Object> m1 = new HashMap<String, Object>();
-        HashMap<String, String> m1Nested = new HashMap<String, String>();
+        Map<String, Object> m1 = new HashMap<String, Object>();
+        Map<String, String> m1Nested = new HashMap<String, String>();
 
         m1Nested.put("nested1", "nestedValue1");
         m1Nested.put("nested2", "nestedValue2");
@@ -98,9 +97,11 @@ public class MongoDbConversionsTest extends AbstractMongoDbTest {
     @SuppressWarnings("unused")
     private class MyPojoTest {
         public int number = 123;
-        public String text ="hello";
+        public String text = "hello";
         public String[] array = {"daVinci", "copernico", "einstein"};
+        // CHECKSTYLE:OFF
         public String _id = "testInsertPojo";
+        // CHECKSTYLE:ON
     }
     
 }

@@ -19,14 +19,6 @@ package org.apache.camel.component.mongodb;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.camel.TypeConverter;
-import org.apache.camel.impl.DefaultProducer;
-import org.apache.camel.util.ObjectHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.CommandResult;
 import com.mongodb.DB;
@@ -35,6 +27,14 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
+
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.camel.TypeConverter;
+import org.apache.camel.impl.DefaultProducer;
+import org.apache.camel.util.ObjectHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The MongoDb producer.
@@ -56,74 +56,73 @@ public class MongoDbProducer extends DefaultProducer {
             try {
                 if (header instanceof MongoDbOperation) {
                     operation = ObjectHelper.cast(MongoDbOperation.class, header);
-                }
-                else {
+                } else {
                     // evaluate as a String
                     operation = MongoDbOperation.valueOf(exchange.getIn().getHeader(MongoDbConstants.OPERATION_HEADER, String.class));
                 }
-            } catch(Exception e) {
-                LOG.error("Operation not supported: {}", header);
-                exchange.setException(new CamelMongoDbException("Operation specified on header is not supported. Value: " + header, e));
-                return;
+            } catch (Exception e) {
+                throw new CamelMongoDbException("Operation specified on header is not supported. Value: " + header, e);
             }
         }
         
         try {
             invokeOperation(operation, exchange);
         } catch (Exception e) {
-            CamelMongoDbException partEx = MongoDbComponent.wrapInCamelMongoDbException(e);
-            LOG.error("Breaking MongoDB operation due to exception", partEx);
-            exchange.setException(partEx);
+            throw MongoDbComponent.wrapInCamelMongoDbException(e);
         }
         
     }
 
+    /**
+     * Entry method that selects the appropriate MongoDB operation and executes it
+     * @param operation
+     * @param exchange
+     * @throws Exception
+     */
     protected void invokeOperation(MongoDbOperation operation, Exchange exchange) throws Exception {
         switch (operation) {
-            case count:
-                doCount(exchange);
-                break;
+        case count:
+            doCount(exchange);
+            break;
             
-            case findOneByQuery:
-                doFindOneByQuery(exchange);
-                break;
-                
-            case findById:
-                doFindById(exchange);
-                break;
-                
-            case findAll:
-                doFindAll(exchange);
-                break;
-                
-            case insert:
-                doInsert(exchange);
-                break;
-                
-            case save:
-                doSave(exchange);
-                break;
-                
-            case update:
-                doUpdate(exchange);
-                break;
-                
-            case remove:
-                doRemove(exchange);
-                break;
-                
-            case getDbStats:
-                doGetStats(exchange, 'D');
-                break;
-                
-            case getColStats:
-                doGetStats(exchange, 'C');
-                break;
-               
-            default:
-                LOG.error("Unexpected operation found: {}", operation);
-                exchange.setException(new CamelMongoDbException("Operation not supported. Value: " + operation));
-                break;
+        case findOneByQuery:
+            doFindOneByQuery(exchange);
+            break;
+
+        case findById:
+            doFindById(exchange);
+            break;
+
+        case findAll:
+            doFindAll(exchange);
+            break;
+
+        case insert:
+            doInsert(exchange);
+            break;
+
+        case save:
+            doSave(exchange);
+            break;
+
+        case update:
+            doUpdate(exchange);
+            break;
+
+        case remove:
+            doRemove(exchange);
+            break;
+
+        case getDbStats:
+            doGetStats(exchange, 'D');
+            break;
+
+        case getColStats:
+            doGetStats(exchange, 'C');
+            break;
+
+        default:
+            throw new CamelMongoDbException("Operation not supported. Value: " + operation);
         }
     }
 
@@ -134,8 +133,7 @@ public class MongoDbProducer extends DefaultProducer {
         
         if (c == 'C') {
             result = calculateCollection(exchange).getStats();
-        } 
-        else if (c == 'D') {
+        } else if (c == 'D') {
             // if it's a DB, also take into account the dynamicity option and the DB that is used
             result = calculateCollection(exchange).getDB().getStats();
         }
@@ -156,7 +154,6 @@ public class MongoDbProducer extends DefaultProducer {
         // obtain the cached CommandResult
         out.setBody(result);
         out.setHeader(MongoDbConstants.RECORDS_AFFECTED, result.getN());
-        
     }
 
     @SuppressWarnings("unchecked")
@@ -182,11 +179,10 @@ public class MongoDbProducer extends DefaultProducer {
             // for update with no multi nor upsert but with specific WriteConcern there is no update signature without multi and upsert args,
             // so assume defaults
             result = wc == null ? dbCol.update(updateCriteria, objNew) : dbCol.update(updateCriteria, objNew, false, false, wc);
-        }
-        else {
+        } else {
             // we calculate the final boolean values so that if any of these parameters is null, it is resolved to false
-            result = wc == null ? dbCol.update(updateCriteria, objNew, calculateBooleanValue(upsert), calculateBooleanValue(multi)) : 
-                dbCol.update(updateCriteria, objNew, calculateBooleanValue(upsert), calculateBooleanValue(multi), wc);
+            result = wc == null ? dbCol.update(updateCriteria, objNew, calculateBooleanValue(upsert), calculateBooleanValue(multi)) 
+                    : dbCol.update(updateCriteria, objNew, calculateBooleanValue(upsert), calculateBooleanValue(multi), wc);
         }
         
         processWriteResult(result, exchange);
@@ -195,7 +191,6 @@ public class MongoDbProducer extends DefaultProducer {
         // obtain the cached CommandResult
         out.setBody(result);
         out.setHeader(MongoDbConstants.RECORDS_AFFECTED, result.getN());
-        
     }
     
     protected void doSave(Exchange exchange) throws Exception {
@@ -309,8 +304,7 @@ public class MongoDbProducer extends DefaultProducer {
         } catch (Exception e) {
             // rethrow the exception
             throw e;
-        }
-        finally {
+        } finally {
             // make sure the cursor is closed
             if (ret != null) {
                 ret.close();
@@ -377,10 +371,10 @@ public class MongoDbProducer extends DefaultProducer {
     private void processWriteResult(WriteResult result, Exchange exchange) {
         // if invokeGetLastError is set, or a WriteConcern is set which implicitly calls getLastError, then we have the chance to populate 
         // the MONGODB_LAST_ERROR header, as well as setting an exception on the Exchange if one occurred at the MongoDB server
-        if (endpoint.isInvokeGetLastError() || (endpoint.getWriteConcern() != null ? endpoint.getWriteConcern().callGetLastError() : false) ) {
+        if (endpoint.isInvokeGetLastError() || (endpoint.getWriteConcern() != null ? endpoint.getWriteConcern().callGetLastError() : false)) {
             CommandResult cr = result.getCachedLastError() == null ? result.getLastError() : result.getCachedLastError();
             exchange.getOut().setHeader(MongoDbConstants.LAST_ERROR, cr);
-            if(!cr.ok()) {
+            if (!cr.ok()) {
                 exchange.setException(MongoDbComponent.wrapInCamelMongoDbException(cr.getException()));
             }
         }
@@ -396,8 +390,8 @@ public class MongoDbProducer extends DefaultProducer {
         } else if (o instanceof String) {
             WriteConcern answer = WriteConcern.valueOf(ObjectHelper.cast(String.class, o));
             if (answer == null) {
-                throw new CamelMongoDbException("WriteConcern specified in the " + MongoDbConstants.WRITECONCERN + 
-                        " header, with value " + o + " could not be resolved to a WriteConcern type");
+                throw new CamelMongoDbException("WriteConcern specified in the " + MongoDbConstants.WRITECONCERN 
+                        + " header, with value " + o + " could not be resolved to a WriteConcern type");
             }
         }
         

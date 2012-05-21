@@ -14,13 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mongodb;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Formatter;
 import java.util.Properties;
+
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.Mongo;
+import com.mongodb.MongoURI;
+import com.mongodb.WriteConcern;
+import com.mongodb.util.JSON;
 
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.test.junit4.CamelTestSupport;
@@ -30,14 +37,6 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.context.ApplicationContext;
-
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.Mongo;
-import com.mongodb.MongoURI;
-import com.mongodb.WriteConcern;
-import com.mongodb.util.JSON;
 
 public abstract class AbstractMongoDbTest extends CamelTestSupport {
 
@@ -53,6 +52,11 @@ public abstract class AbstractMongoDbTest extends CamelTestSupport {
     protected static Properties properties;
     
     protected ApplicationContext applicationContext;
+    
+
+    public AbstractMongoDbTest() {
+        super();
+    }
     
     /**
      * Checks whether Mongo is running using the connection URI defined in the mongodb.test.properties file
@@ -73,10 +77,6 @@ public abstract class AbstractMongoDbTest extends CamelTestSupport {
             Assume.assumeNoException(e);
         }
         
-    }
-
-    public AbstractMongoDbTest() {
-        super();
     }
 
     @Before
@@ -103,14 +103,14 @@ public abstract class AbstractMongoDbTest extends CamelTestSupport {
 
     protected void pumpDataIntoTestCollection() {
         // there should be 100 of each
-        String[] scientists = { "Einstein", "Darwin", "Copernicus", "Pasteur", "Curie", "Faraday", "Newton", "Bohr", "Galilei", "Maxwell" };
+        String[] scientists = {"Einstein", "Darwin", "Copernicus", "Pasteur", "Curie", "Faraday", "Newton", "Bohr", "Galilei", "Maxwell"};
         for (int i = 1; i <= 1000; i++) {
             int index = i % scientists.length;
             Formatter f = new Formatter();
             String doc = f.format("{\"_id\":\"%d\", \"scientist\":\"%s\", \"fixedField\": \"fixedValue\"}", i, scientists[index]).toString();
             testCollection.insert((DBObject) JSON.parse(doc), WriteConcern.SAFE);
         }
-        assertEquals("Data pumping of 1000 entries did not complete entirely", 1000l, testCollection.count());
+        assertEquals("Data pumping of 1000 entries did not complete entirely", 1000L, testCollection.count());
     }
 
     protected CamelMongoDbException extractAndAssertCamelMongoDbException(Object result, String message) {

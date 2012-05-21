@@ -17,10 +17,6 @@
 
 package org.apache.camel.component.mongodb;
 
-import org.apache.camel.Exchange;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.Bytes;
 import com.mongodb.DBCollection;
@@ -28,14 +24,19 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException.CursorNotFound;
 
-public class MongoDbTailingProcess implements Runnable {
+import org.apache.camel.Exchange;
 
-    public volatile boolean keepRunning = true;
-    public volatile boolean stopped = false;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class MongoDbTailingProcess implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(MongoDbTailingProcess.class);
     private static final String CAPPED_KEY = "capped";
 
+    public volatile boolean keepRunning = true;
+    public volatile boolean stopped; // = false
+    
     private final DBCollection dbCol;
     private final MongoDbEndpoint endpoint;
     private final MongoDbTailableCursorConsumer consumer;
@@ -61,6 +62,11 @@ public class MongoDbTailingProcess implements Runnable {
         return cursor;
     }
 
+    /**
+     * Initialise the tailing process, the cursor and if persistent tail tracking is enabled, recover the cursor from the persisted point.
+     * As part of the initialisation process, the component will validate that the collection we are targeting is 'capped'.
+     * @throws Exception
+     */
     public void initializeProcess() throws Exception {
         if (LOG.isInfoEnabled()) {
             LOG.info("Starting MongoDB Tailable Cursor consumer, binding to collection: {}", "db: " + dbCol.getDB() + ", col: " + dbCol.getName());
@@ -84,6 +90,9 @@ public class MongoDbTailingProcess implements Runnable {
         
     }
 
+    /**
+     * The heart of the tailing process.
+     */
     @Override
     public void run() {
         while (keepRunning) {
@@ -120,12 +129,15 @@ public class MongoDbTailingProcess implements Runnable {
             cursor.close();
         }
         // wait until the main loop acknowledges the stop
-        while(!stopped) {}
+        while (!stopped) { }
         if (LOG.isInfoEnabled()) {
             LOG.info("Stopped MongoDB Tailable Cursor consumer, bound to collection: {}", "db: " + dbCol.getDB() + ", col: " + dbCol.getName());
         }
     }
 
+    /**
+     * The heart of the tailing process.
+     */
     private void doRun() {
         // while the cursor has more values, keepRunning is true and the cursorId is not 0, which symbolizes that the cursor is dead
         try {
@@ -138,10 +150,7 @@ public class MongoDbTailingProcess implements Runnable {
                     }
                     consumer.getProcessor().process(exchange);
                 } catch (Exception e) {
-                    LOG.warn("Exception ocurred while processing exchange with ID " + exchange.getExchangeId(), e);
-                    if (exchange.getException() != e) {
-                        exchange.setException(e);
-                    }
+                    // do nothing
                 }
                 tailTracking.setLastVal(dbObj);
             }

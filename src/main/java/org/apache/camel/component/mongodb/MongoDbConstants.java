@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mongodb;
 
-public class MongoDbConstants {
-
+public final class MongoDbConstants {
+    
     public static final String OPERATION_HEADER = "CamelMongoDbOperation";    
     public static final String RESULT_TOTAL_SIZE = "CamelMongoDbResultTotalSize";
     public static final String RESULT_PAGE_SIZE = "CamelMongoDbResultPageSize";
@@ -36,5 +35,7 @@ public class MongoDbConstants {
     public static final String WRITECONCERN = "CamelMongoDbWriteConcern";
     public static final String LIMIT = "CamelMongoDbLimit";
     public static final String FROM_TAILABLE = "CamelMongoDbTailable";
+    
+    private MongoDbConstants() { }
     
 }

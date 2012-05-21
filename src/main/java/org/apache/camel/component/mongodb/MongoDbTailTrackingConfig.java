@@ -14,21 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mongodb;
 
 public class MongoDbTailTrackingConfig {
     
-    // make these variables final for higher performance
-    public final String increasingField;
-    public final boolean persistent;
-    public final String db;
-    public final String collection;
-    public final String field;
-    public final String persistentId;
-    
     public static final String DEFAULT_COLLECTION = "camelTailTracking";
     public static final String DEFAULT_FIELD = "lastTrackingValue";
+    
+    /**
+     * See {@link MongoDbEndpoint#setTailTrackIncreasingField(String)}
+     */
+    public final String increasingField;
+    /**
+     * See {@link MongoDbEndpoint#setPersistentTailTracking(boolean)}
+     */
+    public final boolean persistent;
+    /**
+     * See {@link MongoDbEndpoint#setTailTrackDb(String)}
+     */
+    public final String db;
+    /**
+     * See {@link MongoDbEndpoint#setTailTrackCollection(String)}
+     */
+    public final String collection;
+    /**
+     * See {@link MongoDbEndpoint#setTailTrackField(String)}
+     */
+    public final String field;
+    /**
+     * See {@link MongoDbEndpoint#setPersistentId(String)}
+     */
+    public final String persistentId;
     
     public MongoDbTailTrackingConfig(boolean persistentTailTracking, String tailTrackIncreasingField, String tailTrackDb,
             String tailTrackCollection, String tailTrackField, String persistentId) {

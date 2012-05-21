@@ -18,17 +18,17 @@ package org.apache.camel.component.mongodb;
 
 import java.util.Formatter;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.WriteResult;
+import com.mongodb.util.JSON;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.spring.SpringCamelContext;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
-import com.mongodb.util.JSON;
 
 public class MongoDbOperationsTest extends AbstractMongoDbTest {
 
@@ -38,20 +38,20 @@ public class MongoDbOperationsTest extends AbstractMongoDbTest {
         assertEquals(0, testCollection.count());
         Object result = template.requestBody("direct:count", "irrelevantBody");
         assertTrue("Result is not of type Long", result instanceof Long);
-        assertEquals("Test collection should not contain any records", 0l, result);
+        assertEquals("Test collection should not contain any records", 0L, result);
 
         // Insert a record and test that the endpoint now returns 1
         testCollection.insert((DBObject) JSON.parse("{a:60}"));
         result = template.requestBody("direct:count", "irrelevantBody");
         assertTrue("Result is not of type Long", result instanceof Long);
-        assertEquals("Test collection should contain 1 record", 1l, result);
+        assertEquals("Test collection should contain 1 record", 1L, result);
         testCollection.remove(new BasicDBObject());
         
         // test dynamicity
         dynamicCollection.insert((DBObject) JSON.parse("{a:60}"));
         result = template.requestBodyAndHeader("direct:count", "irrelevantBody", MongoDbConstants.COLLECTION, dynamicCollectionName);
         assertTrue("Result is not of type Long", result instanceof Long);
-        assertEquals("Dynamic collection should contain 1 record", 1l, result);
+        assertEquals("Dynamic collection should contain 1 record", 1L, result);
         
     }
     
@@ -113,11 +113,11 @@ public class MongoDbOperationsTest extends AbstractMongoDbTest {
             }
             template.requestBody("direct:insert", body);
         }
-        assertEquals(100l, testCollection.count());
+        assertEquals(100L, testCollection.count());
         
         // Testing the update logic
         DBObject extraField = new BasicDBObject("extraField", true);
-        assertEquals("Number of records with 'extraField' flag on must equal 50", 50l, testCollection.count(extraField));
+        assertEquals("Number of records with 'extraField' flag on must equal 50", 50L, testCollection.count(extraField));
         assertEquals("Number of records with 'scientist' field = Darwin on must equal 0", 0, testCollection.count(new BasicDBObject("scientist", "Darwin")));
 
         DBObject updateObj = new BasicDBObject("$set", new BasicDBObject("scientist", "Darwin"));
@@ -144,11 +144,11 @@ public class MongoDbOperationsTest extends AbstractMongoDbTest {
             }
             template.requestBody("direct:insert", body);
         }
-        assertEquals(100l, testCollection.count());
+        assertEquals(100L, testCollection.count());
         
         // Testing the update logic
         DBObject extraField = new BasicDBObject("extraField", true);
-        assertEquals("Number of records with 'extraField' flag on must equal 50", 50l, testCollection.count(extraField));
+        assertEquals("Number of records with 'extraField' flag on must equal 50", 50L, testCollection.count(extraField));
         
         Object result = template.requestBody("direct:remove", extraField);
         assertTrue(result instanceof WriteResult);
@@ -191,13 +191,13 @@ public class MongoDbOperationsTest extends AbstractMongoDbTest {
         // check that the count operation was invoked instead of the insert operation
         Object result = template.requestBodyAndHeader("direct:insert", "irrelevantBody", MongoDbConstants.OPERATION_HEADER, "count");
         assertTrue("Result is not of type Long", result instanceof Long);
-        assertEquals("Test collection should not contain any records", 0l, result);
+        assertEquals("Test collection should not contain any records", 0L, result);
         
         
         // check that the count operation was invoked instead of the insert operation
         result = template.requestBodyAndHeader("direct:insert", "irrelevantBody", MongoDbConstants.OPERATION_HEADER, MongoDbOperation.count);
         assertTrue("Result is not of type Long", result instanceof Long);
-        assertEquals("Test collection should not contain any records", 0l, result);
+        assertEquals("Test collection should not contain any records", 0L, result);
         
     }
     

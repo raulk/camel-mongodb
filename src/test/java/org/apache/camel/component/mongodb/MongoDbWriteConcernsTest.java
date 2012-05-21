@@ -16,15 +16,15 @@
  */
 package org.apache.camel.component.mongodb;
 
+import com.mongodb.CommandResult;
+import com.mongodb.WriteConcern;
+import com.mongodb.WriteResult;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.spring.SpringCamelContext;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import com.mongodb.CommandResult;
-import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
 
 public class MongoDbWriteConcernsTest extends AbstractMongoDbTest {
 
@@ -96,8 +96,8 @@ public class MongoDbWriteConcernsTest extends AbstractMongoDbTest {
                 from("direct:noWriteConcern").to("mongodb:myDb?database=test&collection=camelTest&operation=insert");
                 from("direct:writeConcernParam").to("mongodb:myDb?database=test&collection=camelTest&operation=insert&writeConcern=SAFE");
                 //from("direct:writeConcernRef").to("mongodb:myDb?database=test&collection=camelTest&operation=insert&writeConcernRef=customWriteConcern");
-                from("direct:noWriteConcernWithCallGetLastError").to("mongodb:myDb?database=test&collection=camelTest&operation=insert&" +
-                		"invokeGetLastError=true");
+                from("direct:noWriteConcernWithCallGetLastError").to("mongodb:myDb?database=test&collection=camelTest&operation=insert&" 
+                        + "invokeGetLastError=true");
 
 
             }

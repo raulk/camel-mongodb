@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mongodb;
 
 import java.util.concurrent.ExecutorService;
@@ -43,6 +42,7 @@ public class MongoDbTailableCursorConsumer extends DefaultConsumer {
         }
         if (executor != null) {
             executor.shutdown();
+            executor = null;
         }
     }
 

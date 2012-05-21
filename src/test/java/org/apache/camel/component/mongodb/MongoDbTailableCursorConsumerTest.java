@@ -18,6 +18,12 @@ package org.apache.camel.component.mongodb;
 
 import java.util.Calendar;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.WriteConcern;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.ServiceStatus;
 import org.apache.camel.builder.RouteBuilder;
@@ -26,12 +32,6 @@ import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.spring.SpringCamelContext;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.WriteConcern;
 
 public class MongoDbTailableCursorConsumerTest extends AbstractMongoDbTest {
     
@@ -195,7 +195,7 @@ public class MongoDbTailableCursorConsumerTest extends AbstractMongoDbTest {
         mock.assertIsSatisfied();
         mock.reset();
         context.stopRoute("tailableCursorConsumer2");
-        while (context.getRouteStatus("tailableCursorConsumer2") != ServiceStatus.Stopped) {}
+        while (context.getRouteStatus("tailableCursorConsumer2") != ServiceStatus.Stopped) { }
         context.startRoute("tailableCursorConsumer2");
         
         // expect 300 messages and not 600
@@ -224,7 +224,7 @@ public class MongoDbTailableCursorConsumerTest extends AbstractMongoDbTest {
         assertEquals(300, db.getCollection(MongoDbTailTrackingConfig.DEFAULT_COLLECTION).findOne(new BasicDBObject("persistentId", "darwin")).get("lastTrackingValue"));
         // stop the route and verify the last value has been updated
         context.stopRoute("tailableCursorConsumer2");
-        while (context.getRouteStatus("tailableCursorConsumer2") != ServiceStatus.Stopped) {}
+        while (context.getRouteStatus("tailableCursorConsumer2") != ServiceStatus.Stopped) { }
         assertEquals(600, db.getCollection(MongoDbTailTrackingConfig.DEFAULT_COLLECTION).findOne(new BasicDBObject("persistentId", "darwin")).get("lastTrackingValue"));
 
     }
@@ -409,8 +409,8 @@ public class MongoDbTailableCursorConsumerTest extends AbstractMongoDbTest {
                     .autoStartup(false)
                     .to("mock:test");
                 
-                from("mongodb:myDb?database={{mongodb.testDb}}&collection={{mongodb.cappedTestCollection}}&tailTrackIncreasingField=increasing&" +
-                		"persistentTailTracking=true&persistentId=darwin&tailTrackDb=einstein&tailTrackCollection=curie&tailTrackField=newton")
+                from("mongodb:myDb?database={{mongodb.testDb}}&collection={{mongodb.cappedTestCollection}}&tailTrackIncreasingField=increasing&" 
+                     + "persistentTailTracking=true&persistentId=darwin&tailTrackDb=einstein&tailTrackCollection=curie&tailTrackField=newton")
                     .id("tailableCursorConsumer3")
                     .autoStartup(false)
                     .to("mock:test");
